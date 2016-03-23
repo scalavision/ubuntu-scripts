@@ -2,14 +2,18 @@
 # Parts of this script is taken from the tutorial:
 # http://bookofzeus.com/harden-ubuntu
 # In a best effort manner
-# Clean up everything
 
+# Variables used in this script
+OPENSSL_VERSION=openssl-1.0.2g
+SHA256SUM=sha256
+PGPSUM=pgp.asc
+
+# Clean up everything
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get dist-upgrade -y
 sudo apt-get autoremove -y
 sudo apt-get autoclean -y
-
 
 # install unattended upgrades
 
@@ -31,6 +35,9 @@ UPGRADE_SETUP="// Automatically upgrade packages from these (origin:archive) pai
   //Unattended-Upgrade::Mail \"my_user@my_domain.com\";"
   
 sudo echo -e $UPGRADE_SETUP > /etc/apt/apt.conf.d/20auto-upgrades
+
+# Install some necessary packages
+sudo apt-get install build-essential
 
 # Create hard to get user
 # You  would of course modify this to your own preferences
@@ -55,4 +62,56 @@ sudo sysctl -p
 
 # Disable IRQ Balance, so that hardware interrupts don't show up in your threads
 sudo find /etc/default/irqbalance -type f -exec sed -i 's/ENABLED="1"/ENABLED="0"/g' {} \;
+
+# Upgrade openssl package, so that it is patched against heartbleed bug
+sudo apt-get upgrade openssl libssl-dev
+sudo apt-cache policy openssl libssl-dev
+
+# Install and switch to latest stable openssl library
+curl https://www.openssl.org/source/$OPENSSL_VERSION.tar.gz > $OPENSSL_VERSION.tar.gz
+curl https://www.openssl.org/source/$OPENSSL_VERSION.tar.gz.$SHA256SUM > $SHA256SUM
+curl https://www.openssl.org/source/$OPENSSL_VERSION.tar.gz.asc > $PGPSUM
+
+# Make the file a proper sha256 file to enable autochecking
+(echo " $OPENSSL_VERSION.tar.gz " & cat ${SHA256SUM}) | xargs -n 2 | awk '{printf $1 " " $2}' > tmp
+mv tmp $SHA256SUM
+
+# Make sure everything is written to disk on slow vms ..
+sleep .2
+
+# Check the sha256sum, if not OK, ABORT with error code 1
+FILE_OK=$(sha256sum -c ${SHA256SUM})
+
+if echo $FILE_OK | grep -q 'OK';then
+  echo "The Sha256Sum matched the downloaded source bundle"
+else
+  echo "The Sha256sum of downloaded file does not match"
+  exit 1
+fi
+
+echo "Extracting and installing files .."
+tar vxzf $OPENSSL_VERSION.tar.gz
+echo "Entering archive"
+
+cd $OPENSSL_VERSION
+echo "configuring the packages"
+
+sudo ./config
+
+echo "building"
+sudo make
+
+echo "installing"
+sudo make install
+
+echo "Switch to newly installed openssl"
+sudo ln -sf /usr/local/ssl/bin/openssl `which openssl`
+
+cd ../
+
+# Clean up openssl installation
+rm -rf $OPENSSL_VERSION
+rm $OPENSSL_VERSION.tar.gz
+rm $SHA256SUM
+rm $PGPSUM
 
