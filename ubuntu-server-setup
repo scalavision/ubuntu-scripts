@@ -2,9 +2,9 @@
 
 # Clean up everything
 sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get autoremove
-sudo apt-get autoclean
+sudo apt-get upgrade -y
+sudo apt-get autoremove -y
+sudo apt-get autoclean -y
 
 # install unattended upgrades
 
@@ -25,6 +25,6 @@ UPGRADE_SETUP="// Automatically upgrade packages from these (origin:archive) pai
   \n
   //Unattended-Upgrade::Mail \"my_user@my_domain.com\";"
   
-  echo $UPGRADE_SETUP > /etc/apt/apt.conf.d/20auto-upgrades
+  echo -e $UPGRADE_SETUP > /etc/apt/apt.conf.d/20auto-upgrades
   
   
