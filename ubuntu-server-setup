@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Clean up everything
+
 sudo apt-get update
 sudo apt-get upgrade -y
+sudo apt-get dist-upgrade -y
 sudo apt-get autoremove -y
 sudo apt-get autoclean -y
+
 
 # install unattended upgrades
 
@@ -17,14 +20,12 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 
 UPGRADE_SETUP="// Automatically upgrade packages from these (origin:archive) pairs \n
   Unattended-Upgrade::Allowed-Origins {\n
-      \"${distro_id}:${distro_codename}-security\";\n
-  //  \"${distro_id}:${distro_codename}-updates\";\n
-  //  \"${distro_id}:${distro_codename}-proposed\";\n
-  //  \"${distro_id}:${distro_codename}-backports\";\n
+      \"\${distro_id}:\${distro_codename}-security\";\n
+  //  \"\${distro_id}:\${distro_codename}-updates\";\n
+  //  \"\${distro_id}:\${distro_codename}-proposed\";\n
+  //  \"\${distro_id}:\${distro_codename}-backports\";\n
   };\n
   \n
   //Unattended-Upgrade::Mail \"my_user@my_domain.com\";"
   
-  echo -e $UPGRADE_SETUP > /etc/apt/apt.conf.d/20auto-upgrades
-  
-  
+sudo echo -e $UPGRADE_SETUP > /etc/apt/apt.conf.d/20auto-upgrades
