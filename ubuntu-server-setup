@@ -115,3 +115,10 @@ rm $OPENSSL_VERSION.tar.gz
 rm $SHA256SUM
 rm $PGPSUM
 
+# Secure Shared Memory
+#secure shared memory
+SEC_SHARED_MEM="tmpfs     /run/shm    tmpfs	defaults,noexec,nosuid	0	    0"
+sudo echo >> $SECH_SHARED_MEM
+sudo echo -e $SEC_SHARED_MEM >> /etc/fstab
+
+
