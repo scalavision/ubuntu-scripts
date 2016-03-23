@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# Parts of this script is taken from the tutorial:
+# http://bookofzeus.com/harden-ubuntu
+# In a best effort manner
 # Clean up everything
 
 sudo apt-get update
@@ -29,3 +31,21 @@ UPGRADE_SETUP="// Automatically upgrade packages from these (origin:archive) pai
   //Unattended-Upgrade::Mail \"my_user@my_domain.com\";"
   
 sudo echo -e $UPGRADE_SETUP > /etc/apt/apt.conf.d/20auto-upgrades
+
+# Create hard to get user
+# You  would of course modify this to your own preferences
+sudo useradd -d /home/hard-to-get-user-143 -s /bin/bash -m hard-to-get-user-143
+
+# Give sudo access to the user
+sudo usermod -a -G sudo hard-to-get-user-g
+
+# Set a password
+sudo passwd hard-to-get-user-143
+
+# Lock the root account
+sudo passwd -l root
+
+# Disable ipv6
+DISABLE_IPV6="#disable ipv6\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1\n"
+
+echo -e $DISABLE_IPV6 >> sysctl.conf
