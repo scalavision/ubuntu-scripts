@@ -46,6 +46,9 @@ sudo passwd hard-to-get-user-143
 sudo passwd -l root
 
 # Disable ipv6
+# If you need to remove ipv6 settings, uncomment this line
+# grep -v "ipv6" /etc/sysctl.conf > temp && mv temp /etc/sysctl.conf
 DISABLE_IPV6="#disable ipv6\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1\n"
 
-echo -e $DISABLE_IPV6 >> sysctl.conf
+echo -e $DISABLE_IPV6 >> /etc/sysctl.conf
+sudo sysctl -p
