@@ -50,5 +50,9 @@ sudo passwd -l root
 # grep -v "ipv6" /etc/sysctl.conf > temp && mv temp /etc/sysctl.conf
 DISABLE_IPV6="#disable ipv6\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1\n"
 
-echo -e $DISABLE_IPV6 >> /etc/sysctl.conf
+sudo echo -e $DISABLE_IPV6 >> /etc/sysctl.conf
 sudo sysctl -p
+
+# Disable IRQ Balance, so that hardware interrupts don't show up in your threads
+sudo find /etc/default/irqbalance -type f -exec sed -i 's/ENABLED="1"/ENABLED="0"/g' {} \;
+
