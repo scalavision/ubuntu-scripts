@@ -9,6 +9,23 @@
 # - add swap
 # - disable bind9 to use ipv6
 # - secure TCP wrapper
+# - security limits (nr of processes pr user)
+# - timezone
+# - disable anacron
+# - disable apport
+# - disable autofs
+# - disable bluetooth
+# - disable and removal of cups
+# - disable dovecot
+# - disable modemManager
+# - diable nfs
+# - disable snmp server
+# - disable telnet
+# - diable whoopsie
+# - disable wireless
+# - disable zeitgeist
+# - apache conf
+# - app armor
 
 # Variables used in this script
 OPENSSL_VERSION=openssl-1.0.2g
@@ -193,4 +210,32 @@ sudo hostname -F /etc/hostname
 
 sudo echo "127.0.0.1     localhost.$LOCAL_DOMAIN localhost" >> /etc/hosts
 sudo echo "$IP_ADDR      $HOST_NAME.$DOMAIN_NAME    $HOST_NAME" >> /etc/hosts
+
+# Disable and remove atd
+sudo echo 'manual' > /etc/init/atd.override
+sudo apt-get purge at
+
+# Disable and remove avahi (does not seem to be installed by default on ubuntu 14.03 LTS)
+cd /etc/init
+sudo touch avahi-daemon.override
+sudo echo "manual" > avahi-daemon.override
+cd -
+
+sudo apt-get remove avahi-daemon avahi-utils
+
+# Disable ctrl-alt-delete to reboot machine accidently
+sudo find /etc/init/control-alt-delete.conf -type f -exec sed -i 's/exec/# exec/g' {} \;
+
+# Setup firewall
+#!/bin/bash
+sudo apt-get install -y ufw
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw deny 23
+sudo ufw default deny
+sudo ufw enable
+
+# To see status of ufw
+# sudo ufw status verbose
+# sudo iptables -L
 
