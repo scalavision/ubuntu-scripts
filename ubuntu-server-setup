@@ -3,10 +3,23 @@
 # http://bookofzeus.com/harden-ubuntu
 # In a best effort manner
 
+# Skipped parts
+# - installing tools
+# - disable shell accounts
+# - add swap
+# - disable bind9 to use ipv6
+# - secure TCP wrapper
+
 # Variables used in this script
 OPENSSL_VERSION=openssl-1.0.2g
 SHA256SUM=sha256
 PGPSUM=pgp.asc
+
+# You may want to change this to your own preferences
+OBFUSCATED_USER=b2a1c6
+OBFUSCATED_GROUP=z5a3b1
+
+
 
 # Clean up everything
 sudo apt-get update
@@ -41,18 +54,24 @@ sudo apt-get install build-essential
 
 # Create hard to get user
 # You  would of course modify this to your own preferences
-sudo useradd -d /home/hard-to-get-user-143 -s /bin/bash -m hard-to-get-user-143
+sudo useradd -d /home/$OBFUSCATED_USER -s /bin/bash -m $OBFUSCATED_USER
 
 # Give sudo access to the user
-sudo usermod -a -G sudo hard-to-get-user-g
+sudo usermod -a -G sudo $OBFUSCATED_GROUP
 
 # Set a password
-sudo passwd hard-to-get-user-143
+sudo passwd $OBFUSCATED_USER
 
 # Lock the root account
 sudo passwd -l root
 
+# In case you want to unlock the root account, here is the command
+# sudo passwd -u root
+
 # Disable ipv6
+# Remove ip6 from /etc/hosts
+sudo grep -v "ip6" /etc/hosts > temp && mv temp /etc/hosts
+
 # If you need to remove ipv6 settings, uncomment this line
 # grep -v "ipv6" /etc/sysctl.conf > temp && mv temp /etc/sysctl.conf
 DISABLE_IPV6="#disable ipv6\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1\n"
@@ -116,9 +135,47 @@ rm $SHA256SUM
 rm $PGPSUM
 
 # Secure Shared Memory
-#secure shared memory
 SEC_SHARED_MEM="tmpfs     /run/shm    tmpfs	defaults,noexec,nosuid	0	    0"
 sudo echo >> $SECH_SHARED_MEM
 sudo echo -e $SEC_SHARED_MEM >> /etc/fstab
+# Enable the changes
+sudo mount -a
+
+# To find files and folders that can be secured, you can run this command
+# sudo find / -perm -2 ! -type l -ls
+
+# Securing /tmp folder
+# creating a secured tmp disk
+sudo dd if=/dev/zero of=/usr/tmpDSK bs=1024 count=1024000
+
+# Backing up the current /tmp folder
+sudo cp -Rpf /tmp /tmpbackup
+
+# Mounting the new /tmp partition and setting the right permissions
+sudo mount -t tmpfs -o loop,noexec,nosuid,rw /usr/tmpDSK /tmp
+sudo chmod 1777 /tmp
+
+#Copying the data from backup folder, and removing backup folder
+sudo cp -Rpf /tmpbackup/* /tmp/
+sudo rm -rf /tmpbackup/*
+
+# Adding the new entry to fstab
+sudo echo >> /etc/fstab
+sudo echo "/usr/tmpDSK /tmp tmpfs loop,nosuid,noexec,rw   0   0" >> /etc/fstab
+
+# Refreshing fstab
+sudo mount -o remount /tmp
+
+# /var/tmp is used by some services, let's link this to /tmp
+# You will need to restart those services accordingly
+sudo mv /var/tmp /var/tmpold
+sudo ln -s /tmp /var/tmp
+sudo cp -prf /var/tmpold/* /tmp/
+
+# Server Stability, make it reboot if it runs out of memory
+sudo echo >> /etc/sysctl.conf
+sudo echo >> "# Reboot on Out Of Memory failure" >> /etc/sysctl.conf
+sudo echo "vm.panic_on_oom=1" >> /etc/sysctl.conf
+sudo echo "kernel.panic=1" >> /etc/sysctl.conf
 
 
