@@ -26,6 +26,12 @@
 # - disable zeitgeist
 # - apache conf
 # - app armor
+# - MySQL conf
+# - Php conf
+# - Protect DDOS attacks
+# - iptables
+# - ssh config
+# - sysctl config
 
 # Variables used in this script
 OPENSSL_VERSION=openssl-1.0.2g
@@ -99,6 +105,11 @@ DISABLE_IPV6="#disable ipv6\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.d
 
 sudo echo -e $DISABLE_IPV6 >> /etc/sysctl.conf
 sudo sysctl -p
+
+
+# Disable IPV6 in unified firewall ufw
+sudo find /etc/default/ufw -type f -exec sed -i 's/IPV6=yes/IPV6=no/g' {} \;
+sudo ufw reload
 
 # Disable IRQ Balance, so that hardware interrupts don't show up in your threads
 sudo find /etc/default/irqbalance -type f -exec sed -i 's/ENABLED="1"/ENABLED="0"/g' {} \;
@@ -238,4 +249,8 @@ sudo ufw enable
 # To see status of ufw
 # sudo ufw status verbose
 # sudo iptables -L
+
+# Prevent ip spoofing
+sudo echo "order bind,hosts" > /etc/host.conf
+sudo echo "nospoof on" >> /etc/host.conf
 
