@@ -19,7 +19,11 @@ PGPSUM=pgp.asc
 OBFUSCATED_USER=b2a1c6
 OBFUSCATED_GROUP=z5a3b1
 
-
+# Host settings
+HOST_NAME=dumbo
+LOCAL_DOMAIN=localdomain
+DOMAIN_NAME=mydomain.dom
+IP_ADDR=10.0.2.15
 
 # Clean up everything
 sudo apt-get update
@@ -178,4 +182,15 @@ sudo echo >> "# Reboot on Out Of Memory failure" >> /etc/sysctl.conf
 sudo echo "vm.panic_on_oom=1" >> /etc/sysctl.conf
 sudo echo "kernel.panic=1" >> /etc/sysctl.conf
 
+# Set hostname and hostfile
+HOST_NAME=dumbo
+LOCAL_DOMAIN=localdomain
+DOMAIN_NAME=mydomain.dom
+IP_ADDR=10.0.2.15
+
+echo $HOST_NAME >> /etc/hostname
+sudo hostname -F /etc/hostname
+
+sudo echo "127.0.0.1     localhost.$LOCAL_DOMAIN localhost" >> /etc/hosts
+sudo echo "$IP_ADDR      $HOST_NAME.$DOMAIN_NAME    $HOST_NAME" >> /etc/hosts
 
