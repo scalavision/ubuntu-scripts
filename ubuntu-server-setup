@@ -204,6 +204,14 @@ sudo mv /var/tmp /var/tmpold
 sudo ln -s /tmp /var/tmp
 sudo cp -prf /var/tmpold/* /tmp/
 
+# apt-get sometimes needs an executable tmp
+
+# Make /tmp executable before apt updates packages
+sudo echo "DPkg::Pre-Invoke {\"mount -o remount,exec /tmp\";};" >> /etc/apt/apt.conf
+
+# Put back non-executable /tmp 
+sudo echo "DPkg::Post-Invoke {\"mount -o remount,rw,noexec,nosuid,nodev /tmp\";}" >> /etc/apt/apt.conf;
+
 # Server Stability, make it reboot if it runs out of memory
 sudo echo >> /etc/sysctl.conf
 sudo echo >> "# Reboot on Out Of Memory failure" >> /etc/sysctl.conf
@@ -253,4 +261,7 @@ sudo ufw enable
 # Prevent ip spoofing
 sudo echo "order bind,hosts" > /etc/host.conf
 sudo echo "nospoof on" >> /etc/host.conf
+
+# Install Nginx with modsecurity from source
+
 
